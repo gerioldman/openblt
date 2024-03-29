@@ -3,3 +3,5 @@
 **/*.exe
 **/*.elf
 **/*.map
+subprojects/libusb-*
+subprojects/packagecache

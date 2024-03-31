@@ -5,3 +5,4 @@
 **/*.map
 subprojects/libusb-*
 subprojects/packagecache
+.meson-subproject-wrap-hash.txt

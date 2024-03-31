@@ -20,13 +20,20 @@ option(
         'ARMCM4_STM32F4',
         'ARMCM4_STM32G4',
         'ARMCM4_STM32L4',
-        'ARMCM4_TM4C',
+        #'ARMCM4_TM4C', Compiler not supported by Meson for now
         'ARMCM4_XMC4',
         'ARMCM7_STM32F7',
         'ARMCM7_STM32H7',
-        'HCS12',
+        #'HCS12', Compiler not supported by Meson for now
         'TRICORE_TC2',
         'TRICORE_TC3',
     ],
-    value : 'ARMCM0_S32K11'
+    yield : true
+)
+
+option(
+    'build_demo',
+    type : 'boolean',
+    value: false,
+    yield : true
 )

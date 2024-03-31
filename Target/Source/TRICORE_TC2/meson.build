@@ -1,11 +1,11 @@
-if meson.get_compiler('c').get_id() != 'gcc' and meson.get_compiler('c').get_id() != 'armclang'
+if meson.get_compiler('c').get_id() != 'cctc'
 error('Used compiler is not supported for this target')
 endif
 
-ARMCM4_XMC4_dep = declare_dependency(
+TRICORE_TC2_dep = declare_dependency(
     sources: [
         # Meson only supports GCC and clang, so IAR file is not used
-        'GCC/cpu_comp.c',
+        'Tasking/cpu_comp.c',
         'can.c',
         'cpu.c',
         'flash.c',
@@ -13,7 +13,6 @@ ARMCM4_XMC4_dep = declare_dependency(
         'nvm.c',
         'rs232.c',
         'timer.c',
-        'usb.c',
     ],
     include_directories: [
         '.'

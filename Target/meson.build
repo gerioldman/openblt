@@ -1,16 +1,5 @@
-ARMCM4_STM32F4_Nucleo_F446RE_bootloader = executable(
-    'ARMCM4_STM32F4_Nucleo_F446RE_bootloader',
-    name_suffix: 'elf',
+openblt_core_dep = declare_dependency(
     sources: [
-        'Source/ARMCM4_STM32F4/GCC/cpu_comp.c',
-        'Source/ARMCM4_STM32F4/can.c',
-        'Source/ARMCM4_STM32F4/cpu.c',
-        'Source/ARMCM4_STM32F4/flash.c',
-        'Source/ARMCM4_STM32F4/mbrtu.c',
-        'Source/ARMCM4_STM32F4/nvm.c',
-        'Source/ARMCM4_STM32F4/rs232.c',
-        'Source/ARMCM4_STM32F4/timer.c',
-        'Source/ARMCM4_STM32F4/usb.c',
         'Source/asserts.c',
         'Source/backdoor.c',
         'Source/boot.c',
@@ -20,6 +9,19 @@ ARMCM4_STM32F4_Nucleo_F446RE_bootloader = executable(
         'Source/mb.c',
         'Source/net.c',
         'Source/xcp.c',
+    ],
+    include_directories: [
+        'Source'
+    ]
+)
+
+subdir('Source' / get_option('target'))
+openblt_target_dep = get_variable(get_option('target') + '_dep')
+
+ARMCM4_STM32F4_Nucleo_F446RE_bootloader = executable(
+    'ARMCM4_STM32F4_Nucleo_F446RE_bootloader',
+    name_suffix: 'elf',
+    sources: [
         'Demo/ARMCM4_STM32F4_Nucleo_F446RE_CubeIDE/Boot/App/app.c',
         'Demo/ARMCM4_STM32F4_Nucleo_F446RE_CubeIDE/Boot/App/hooks.c',
         'Demo/ARMCM4_STM32F4_Nucleo_F446RE_CubeIDE/Boot/App/led.c',
@@ -51,9 +53,6 @@ ARMCM4_STM32F4_Nucleo_F446RE_bootloader = executable(
         'Demo/ARMCM4_STM32F4_Nucleo_F446RE_CubeIDE/Boot/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_utils.c',
     ],
     include_directories: [
-        'Source',
-        'Source/ARMCM4_STM32F4',
-        'Source/ARMCM4_STM32F4/GCC',
         'Demo/ARMCM4_STM32F4_Nucleo_F446RE_CubeIDE/Boot/App',
         'Demo/ARMCM4_STM32F4_Nucleo_F446RE_CubeIDE/Boot/Core/Inc',
         'Demo/ARMCM4_STM32F4_Nucleo_F446RE_CubeIDE/Boot/Drivers/STM32F4xx_HAL_Driver/Inc',
@@ -68,6 +67,10 @@ ARMCM4_STM32F4_Nucleo_F446RE_bootloader = executable(
     ],
     link_args: [
         '-T' + files('Demo/ARMCM4_STM32F4_Nucleo_F446RE_CubeIDE/Boot/STM32F446RETX_FLASH.ld')[0].full_path()
+    ],
+    dependencies: [
+        openblt_core_dep,
+        openblt_target_dep
     ]
 )
 

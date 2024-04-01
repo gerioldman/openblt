@@ -82,9 +82,7 @@ bootloader_hex = custom_target(
     build_by_default: true
 )
 
-if not get_option('build_on_CI') 
-
-stlink = find_program('ST-LINK_CLI')
+stlink = find_program('ST-LINK_CLI', disabler: true)
 
 run_target(
     'flash_bootloader',
@@ -92,5 +90,3 @@ run_target(
         stlink, '-P', bootloader_hex
     ]
 )
-
-endif

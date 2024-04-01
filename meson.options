@@ -37,10 +37,3 @@ option(
     value: false,
     yield : true
 )
-
-option(
-    'build_on_CI',
-    type : 'boolean',
-    value: false,
-    yield : true
-)

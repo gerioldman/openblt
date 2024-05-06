@@ -18,6 +18,8 @@ openblt_core_dep = declare_dependency(
 subdir('Source' / get_option('target'))
 openblt_target_dep = get_variable(get_option('target') + '_dep')
 
+if get_option('build_demo')
+
 ARMCM4_STM32F4_Nucleo_F446RE_bootloader = executable(
     'ARMCM4_STM32F4_Nucleo_F446RE_bootloader',
     name_suffix: 'elf',
@@ -90,3 +92,5 @@ run_target(
         stlink, '-P', bootloader_hex
     ]
 )
+
+endif

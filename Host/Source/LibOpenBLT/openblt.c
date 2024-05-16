@@ -417,6 +417,39 @@ LIBOPENBLT_EXPORT uint32_t BltSessionReadData(uint32_t address, uint32_t len,
   return result;
 } /*** end of BltSessionReadData ***/
 
+/************************************************************************************//**
+** \brief     Sends the XCP USER command.
+** \param     cmd_len Number of elements to send in the user command.
+** \param     cmd_data User command data to send.
+** \param     res_len IN: Length of the buffer provided by the caller
+**                    OUT: Number of elements received in the packet
+** \param     res_data Received data in the packet will be provided in this buffer.
+** \return    True if successful, false otherwise.
+**
+****************************************************************************************/
+LIBOPENBLT_EXPORT uint32_t BltSessionUserCommand(uint8_t cmd_len, uint8_t* cmd_data, 
+                                              uint8_t* res_len, uint8_t * res_data)
+{
+  uint32_t result = BLT_RESULT_ERROR_GENERIC;
+
+  /* Check parameters. */
+  assert(cmd_data != NULL);
+  assert(res_data != NULL);
+  assert(res_len != NULL);
+
+  /* Only continue if the parameters are valid. */
+  if ( (res_data != NULL) && (cmd_data != NULL) && (res_len != NULL)) /*lint !e774 */
+  {
+    /* Pass the request on to the session module. */
+    if (SessionUserCommand(cmd_len,cmd_data,res_len,res_data))
+    {
+      result = BLT_RESULT_OK;
+    }
+  }
+  /* Give the result back to the caller. */
+  return result;
+} /*** end of BltSessionReadData ***/
+
 
 /****************************************************************************************
 *             F I R M W A R E   D A T A

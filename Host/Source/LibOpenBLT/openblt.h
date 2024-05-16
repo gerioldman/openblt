@@ -213,6 +213,8 @@ LIBOPENBLT_EXPORT uint32_t BltSessionWriteData(uint32_t address, uint32_t len,
                                                uint8_t const * data);
 LIBOPENBLT_EXPORT uint32_t BltSessionReadData(uint32_t address, uint32_t len, 
                                               uint8_t * data);
+LIBOPENBLT_EXPORT uint32_t BltSessionUserCommand(uint8_t cmd_len, uint8_t* cmd_data, 
+                                              uint8_t* res_len, uint8_t * res_data);
 
 
 /****************************************************************************************

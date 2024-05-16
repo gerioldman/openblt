@@ -50,6 +50,7 @@
 #define XCPLOADER_CMD_UNLOCK          (0xF7u)    /**< XCP unlock command code.         */
 #define XCPLOADER_CMD_SET_MTA         (0xF6u)    /**< XCP set mta command code.        */
 #define XCPLOADER_CMD_UPLOAD          (0xF5u)    /**< XCP upload command code.         */
+#define XCPLOADER_CMD_USER            (0xF1u)    /**< XCP user command code.           */
 #define XCPLOADER_CMD_PROGRAM_START   (0xD2u)    /**< XCP program start command code.  */
 #define XCPLOADER_CMD_PROGRAM_CLEAR   (0xD1u)    /**< XCP program clear command code.  */
 #define XCPLOADER_CMD_PROGRAM         (0xD0u)    /**< XCP program command code.        */
@@ -74,6 +75,7 @@ static void XcpLoaderStop(void);
 static bool XcpLoaderClearMemory(uint32_t address, uint32_t len);
 static bool XcpLoaderWriteData(uint32_t address, uint32_t len, uint8_t const * data);  
 static bool XcpLoaderReadData(uint32_t address, uint32_t len, uint8_t * data);
+static bool XcpLoaderUserCommand(uint8_t cmd_len, uint8_t* cmd_data, uint8_t* res_len, uint8_t * res_data);
 /* General module specific utility functions. */
 static void XcpLoaderSetOrderedLong(uint32_t value, uint8_t *data);
 static uint16_t XcpLoaderGetOrderedWord(uint8_t const * data);
@@ -91,6 +93,7 @@ static bool XcpLoaderSendCmdProgramReset(void);
 static bool XcpLoaderSendCmdProgram(uint8_t length, uint8_t const * data);
 static bool XcpLoaderSendCmdProgramMax(uint8_t const * data);
 static bool XcpLoaderSendCmdProgramClear(uint32_t length);
+static bool XcpLoaderSendUserCommand(uint32_t length);
 
 
 /****************************************************************************************
@@ -105,7 +108,8 @@ static const tSessionProtocol xcpLoader =
   .Stop = XcpLoaderStop,
   .ClearMemory = XcpLoaderClearMemory,
   .WriteData = XcpLoaderWriteData,
-  .ReadData = XcpLoaderReadData
+  .ReadData = XcpLoaderReadData,
+  .UserCommand = XcpLoaderUserCommand,
 };
 
 
@@ -1398,5 +1402,64 @@ static bool XcpLoaderSendCmdProgramClear(uint32_t length)
   return result;
 } /*** end of XcpLoaderSendCmdProgramClear ***/
 
+/************************************************************************************//**
+** \brief     Sends the XCP USER command.
+** \param     cmd_len Number of elements to send in the user command.
+** \param     cmd_data User command data to send.
+** \param     res_len IN: Length of the buffer provided by the caller
+**                    OUT: Number of elements received in the packet
+** \param     res_data Received data in the packet will be provided in this buffer.
+** \return    True if successful, false otherwise.
+**
+****************************************************************************************/
+static bool XcpLoaderUserCommand(uint8_t cmd_len, uint8_t* cmd_data, uint8_t* res_len, uint8_t * res_data)
+{
+  bool result = false;
+  tXcpTransportPacket cmdPacket;
+  tXcpTransportPacket resPacket;
+  
+  /* Only continue with a valid transport layer. */
+  if (xcpSettings.transport != NULL) /*lint !e774 */
+  {
+    /* Init the result value to okay and only set it to error when a problem occurred. */
+    result = true;
+    /* Prepare the command packet. */
+    cmdPacket.data[0] = XCPLOADER_CMD_USER;
+    for (uint16_t dataIdx = 0; dataIdx < cmd_len; dataIdx++)
+    {
+      cmdPacket.data[dataIdx + 1] = cmd_data[dataIdx];
+    }
+    /* Set length. */
+    cmdPacket.len = 1 + cmd_len;
+    /* Send the packet. */
+    if (!xcpSettings.transport->SendPacket(&cmdPacket, &resPacket, 
+                                           xcpSettings.timeoutT4))
+    {
+      /* Could not send packet or receive response within the specified timeout. */
+      result = false;
+    }
+    /* Only continue if a response was received. */
+    if (result)
+    {
+      /* Check if the response was valid. */
+      if ((resPacket.data[0] != XCPLOADER_CMD_PID_RES) || (*res_len < resPacket.len))
+      {
+        /* Not a valid or positive response or buffer received is too small */
+        result = false;
+      }
+      /* Provide the response to the caller through the received buffer */
+      else
+      {
+        *res_len = resPacket.len;
+        for (uint16_t dataIdx = 0; dataIdx < (resPacket.len - 1); dataIdx++)
+        {
+          res_data[dataIdx] = resPacket.data[dataIdx + 1];
+        }
+      }
+    }
+  }  
+  /* Give the result back to the caller. */
+  return result;
+}
 
 /*********************************** end of xcploader.c ********************************/

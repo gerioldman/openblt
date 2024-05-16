@@ -203,4 +203,33 @@ bool SessionReadData(uint32_t address, uint32_t len, uint8_t * data)
   return result;
 } /*** end of SessionReadData ***/
 
+/************************************************************************************//**
+** \brief     Sends the XCP USER command.
+** \param     cmd_len Number of elements to send in the user command.
+** \param     cmd_data User command data to send.
+** \param     res_len IN: Length of the buffer provided by the caller
+**                    OUT: Number of elements received in the packet
+** \param     res_data Received data in the packet will be provided in this buffer.
+** \return    True if successful, false otherwise.
+**
+****************************************************************************************/
+bool SessionUserCommand(uint8_t cmd_len, uint8_t* cmd_data, uint8_t* res_len, uint8_t * res_data)
+{
+  bool result = false;
+
+  /* Check parameters. */
+  assert(cmd_data != NULL);
+  assert(res_data != NULL);
+  assert(res_len != NULL);
+
+  /* Only continue if the parameters are valid. */
+  if ( (res_data != NULL) && (cmd_data != NULL) && (res_len != NULL)) /*lint !e774 */
+  {
+    /* Pass the request on to the linked protocol module. */
+    result = protocolPtr->UserCommand(cmd_len,cmd_data,res_len,res_data);
+  }
+  /* Give the result back to the caller. */
+  return result;
+}
+
 /*********************************** end of session.c **********************************/

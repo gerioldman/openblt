@@ -75,6 +75,9 @@ typedef struct t_session_protocol
    *         stored in the data byte array to which the pointer was specified.
    */
   bool (* ReadData) (uint32_t address, uint32_t len, uint8_t * data);
+  /** \brief Sends a custom user command to the bootloader and return the response.
+   */
+  bool (* UserCommand) (uint8_t cmd_len, uint8_t* cmd_data, uint8_t* res_len, uint8_t * res_data);
 } tSessionProtocol;
 
 
@@ -88,7 +91,7 @@ void SessionStop(void);
 bool SessionClearMemory(uint32_t address, uint32_t len);
 bool SessionWriteData(uint32_t address, uint32_t len, uint8_t const * data);  
 bool SessionReadData(uint32_t address, uint32_t len, uint8_t * data);
-
+bool SessionUserCommand(uint8_t cmd_len, uint8_t* cmd_data, uint8_t* res_len, uint8_t * res_data);
 
 #ifdef __cplusplus
 }

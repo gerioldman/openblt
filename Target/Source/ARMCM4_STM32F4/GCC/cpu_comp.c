@@ -39,7 +39,7 @@
 ****************************************************************************************/
 void CpuIrqDisable(void)
 {
-  __asm volatile ("cpsid i");
+  //__asm volatile ("cpsid i");
 } /*** end of CpuIrqDisable ***/
 
 
@@ -50,7 +50,7 @@ void CpuIrqDisable(void)
 ****************************************************************************************/
 void CpuIrqEnable(void)
 {
-  __asm volatile ("cpsie i");
+  //__asm volatile ("cpsie i");
 } /*** end of CpuIrqEnable ***/
 
 /*********************************** end of cpu_comp.c *********************************/

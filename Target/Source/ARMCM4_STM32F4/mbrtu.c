@@ -33,6 +33,9 @@
 #if (BOOT_COM_MBRTU_ENABLE > 0)
 #include "stm32f4xx.h"                           /* STM32 CPU and HAL header           */
 #include "stm32f4xx_ll_usart.h"                  /* STM32 LL USART header              */
+#include "main.h"
+//#include "cmsis_os.h"
+//#include "stream_buffer.h"
 
 
 /****************************************************************************************
@@ -75,7 +78,9 @@
  *         character delay time (T3_5) for Modbus RTU.
  */
 static blt_int16u mbRtuT3_5Ticks;
-
+static blt_int8u rxPacket[BOOT_COM_MBRTU_RX_MAX_DATA + 5];
+static blt_int8u rxLength = 0;
+static blt_bool packetRxInProgress = BLT_FALSE;
 
 /****************************************************************************************
 * Function prototypes
@@ -272,57 +277,20 @@ void MbRtuTransmitPacket(blt_int8u *data, blt_int8u len)
 blt_bool MbRtuReceivePacket(blt_int8u *data, blt_int8u *len)
 {
   blt_bool result = BLT_FALSE;
-  blt_int8u rxByte;
-  blt_int16u currentTimeTicks;
-  blt_int16u deltaTimeTicks;
   blt_int16u checksumCalculated;
   blt_int16u checksumReceived;
-  /* Made static to lower stack load and +5 for Modbus RTU packet overhead. */
-  static blt_int8u rxPacket[BOOT_COM_MBRTU_RX_MAX_DATA + 5];
-  static blt_int8u rxLength = 0;
-  static blt_bool packetRxInProgress = BLT_FALSE;
-  static blt_int16u lastRxByteTimeTicks = 0;
+  blt_int8u bytesReceived = xStreamBufferReceive(xStreamBufferHandle, &rxPacket[rxLength], 1, 2);
 
-  /* get the current value of the free running counter. */
-  currentTimeTicks = MbRtuFreeRunningCounterGet();
-
-  /* check for a newly received byte. */
-  if (MbRtuReceiveByte(&rxByte) == BLT_TRUE)
-  {
-    /* store the time at which the byte was received. */
-    lastRxByteTimeTicks = currentTimeTicks;
-    /* is this the potential start of a new packet? */
-    if (packetRxInProgress == BLT_FALSE)
-    {
-      /* initialize the reception of a new packet. */
-      rxLength = 0;
-      packetRxInProgress = BLT_TRUE;
-    }
-    /* store the newly received byte in the buffer, with buffer overrun protection. */
-    if (rxLength < (sizeof(rxPacket)/sizeof(rxPacket[0])))
-    {
-      rxPacket[rxLength] = rxByte;
-      rxLength++;
-    }
-    /* buffer overrun occurred. received packet was longer than supported so discard
-     * the packet to try and sync to the next one.
-     */
-    else
-    {
-      /* discard the partially received packet. */
-      packetRxInProgress = BLT_FALSE;
-    }
+  if (bytesReceived){
+    // Add to packet data
+    packetRxInProgress = BLT_TRUE;
+    rxLength += bytesReceived;
+    result = BLT_FALSE;
   }
-
-  /* only attempt to detect the end of packet, when a reception is in progress. */
-  if (packetRxInProgress == BLT_TRUE)
+  else
   {
-    /* calculate the number of ticks that elapsed since the last byte reception. note
-     * that this calculation works, even if the free running counter overflowed.
-     */
-    deltaTimeTicks = currentTimeTicks - lastRxByteTimeTicks;
-    /* packet reception is assumed complete after T3_5 of not receiving new data. */
-    if (deltaTimeTicks >= mbRtuT3_5Ticks)
+    // Process packet
+    if (packetRxInProgress)
     {
       /* a Modbus RTU packet consists of at least the address field, function code and
        * 16-bit CRC. Validate the packet length based on this info.
@@ -359,12 +327,15 @@ blt_bool MbRtuReceivePacket(blt_int8u *data, blt_int8u *len)
           }
         }
       }
-      /* reset the packet reception in progress flag, to be able to receive the next. */
+      rxLength = 0;
       packetRxInProgress = BLT_FALSE;
     }
+    else
+    {
+      /* Nothing to do */
+      result = BLT_FALSE;
+    }
   }
-
-  /* give the result back to the caller. */
   return result;
 } /*** end of MbRtuReceivePacket ***/
 

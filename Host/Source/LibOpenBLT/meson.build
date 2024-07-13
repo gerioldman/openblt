@@ -101,6 +101,9 @@ libopenblt_dep = declare_dependency(
         platform_includes,
         include_directories('.')
     ],
+    compile_args : [
+        platform_c_args
+    ],
     link_with: libopenblt.get_static_lib()
 )
 

@@ -27,6 +27,7 @@ option(
         #'HCS12', Compiler not supported by Meson for now
         'TRICORE_TC2',
         'TRICORE_TC3',
+        'RISCV_CH32V30x',
     ],
     yield : true
 )

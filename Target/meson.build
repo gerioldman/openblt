@@ -18,7 +18,7 @@ openblt_core_dep = declare_dependency(
 subdir('Source' / get_option('target'))
 openblt_target_dep = get_variable(get_option('target') + '_dep')
 
-if get_option('build_demo')
+if get_option('build_demo') and get_option('target') == 'ARMCM4_STM32F4'
 
 ARMCM4_STM32F4_Nucleo_F446RE_bootloader = executable(
     'ARMCM4_STM32F4_Nucleo_F446RE_bootloader',
@@ -90,6 +90,79 @@ run_target(
     'flash_bootloader',
     command: [
         stlink, '-P', bootloader_hex
+    ]
+)
+
+endif
+
+if get_option('build_demo') and get_option('target') == 'RISCV_CH32V30x'
+
+CH32V307V_EVT_R1_bootloader = executable(
+    'CH32V307V_EVT_R1_GCC_bootloader',
+    name_suffix: 'elf',
+    sources: [
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Core/core_riscv.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Debug/debug.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_adc.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_bkp.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_can.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_crc.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_dac.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_dbgmcu.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_dma.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_dvp.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_eth.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_exti.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_flash.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_fsmc.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_gpio.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_i2c.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_iwdg.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_misc.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_opa.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_pwr.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_rcc.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_rng.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_rtc.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_sdio.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_spi.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_tim.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_usart.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/src/ch32v30x_wwdg.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Startup/startup_ch32v30x_D8C.S',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/User/ch32v30x_it.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/User/main.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/User/system_ch32v30x.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/User/hooks.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/User/led.c',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/User/usb_descriptors.c',
+    ],
+    include_directories: [
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Core',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Debug',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/Peripheral/inc',
+        'Demo/CH32V307V-EVT-R1_GCC/Boot/User',
+    ],
+    c_args: [
+        '-DCFG_TUSB_MCU=OPT_MCU_CH32V307'
+    ],
+    link_args: [
+        '-T' + files('Demo/CH32V307V-EVT-R1_GCC/Boot/Ld/Link.ld')[0].full_path(),
+        '-Wl,-Map=' + meson.current_build_dir() / 'CH32V307V_EVT_R1_GCC_bootloader.map'
+    ],
+    dependencies: [
+        openblt_core_dep,
+        openblt_target_dep,
+        dependency('tinyusb')
+    ]
+)
+
+wlink = find_program('wlink', disabler: true, required : false)
+
+run_target(
+    'flash_bootloader',
+    command: [
+        wlink, 'flash', CH32V307V_EVT_R1_bootloader
     ]
 )
 

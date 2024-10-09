@@ -4,7 +4,7 @@ project(
     version: '0.0.0',
     default_options: {
         'c_std': 'gnu99',
-        'optimization' : 3,
+        'optimization' : '3',
         'debug' : true
     }
 )

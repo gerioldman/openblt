@@ -4,5 +4,6 @@
 **/*.elf
 **/*.map
 subprojects/libusb-*
+subprojects/tinyusb-*
 subprojects/packagecache
 .meson-subproject-wrap-hash.txt

@@ -760,18 +760,17 @@ static blt_bool FlashWriteBlock(tFlashBlockInfo *block)
         result = BLT_FALSE;
         break;
       }
-      /* verify that the written data is actually there */
-      //if (*(volatile blt_int32u *)prog_addr != prog_data)
-      //{
-        /* TODO ##Port Uncomment the following two lines again. It was commented out so
-         * that a dry run with the flash driver is possible without it reporting errors.
-         */
-        /*result = BLT_FALSE;*/
-        /*break;*/
-      //}
+      for (blt_int32u i=0; i<256u; i++)
+      {
+        /* verify that the written data is actually there */
+        if (*(volatile blt_int8u *)(prog_addr + i) != block->data[word_cnt * 256u + i])
+        {
+          result = BLT_FALSE;
+          break;
+        }
+      }
     }
   }
-
   /* Give the result back to the caller. */
   return result;
 } /*** end of FlashWriteBlock ***/

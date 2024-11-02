@@ -59,7 +59,7 @@
 /* The TinyUSB port was modified to support polling mode operation, needed by the 
  * bootloader. Verify that polling mode was actually enabled in the configuration header.
  */
-#if (CFG_TUSB_POLLING_ENABLED <= 0)
+#if (CFG_TUSB_POLLING_ENABLED <= 0 && CFG_TUSB_OS == OPT_OS_NONE)
 #error "CFG_TUSB_POLLING_ENABLED must be > 0"
 #endif
 
@@ -77,7 +77,7 @@ static blt_bool  UsbReceiveByte(blt_int8u *data);
 ****************************************************************************************/
 void UsbInit(void)
 {
-  // Fullspeed USB
+#if CFG_TUD_WCH_USBIP_USBFS == 1
   uint8_t otg_div;
   switch (SystemCoreClock) {
     case 48000000:  otg_div = RCC_OTGFSCLKSource_PLLCLK_Div1; break;
@@ -87,6 +87,15 @@ void UsbInit(void)
   }
   RCC_OTGFSCLKConfig(otg_div);
   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_OTG_FS, ENABLE);
+#endif
+#if CFG_TUD_WCH_USBIP_USBHS == 1
+  RCC_USBCLK48MConfig(RCC_USBCLK48MCLKSource_USBPHY);
+  RCC_USBHSPLLCLKConfig(RCC_HSBHSPLLCLKSource_HSE);
+  RCC_USBHSConfig(RCC_USBPLL_Div2);
+  RCC_USBHSPLLCKREFCLKConfig(RCC_USBHSPLLCKREFCLK_4M);
+  RCC_USBHSPHYPLLALIVEcmd(ENABLE);
+  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_USBHS, ENABLE);
+#endif
 
   /* initialize the TinyUSB device stack on the configured roothub port */
   tud_init(BOARD_TUD_RHPORT);
@@ -109,7 +118,13 @@ void UsbInit(void)
 ****************************************************************************************/
 void UsbFree(void)
 {
+#if CFG_TUD_WCH_USBIP_USBFS == 1
   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_OTG_FS, DISABLE);
+#endif
+#if CFG_TUD_WCH_USBIP_USBHS == 1
+  RCC_USBHSPHYPLLALIVEcmd(DISABLE);
+  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_USBHS, DISABLE);
+#endif
   /* disconnect the TinyUSB device stack.*/
   tud_disconnect();
 } /*** end of UsbFree ***/
@@ -153,11 +168,13 @@ blt_bool UsbReceivePacket(blt_int8u *data, blt_int8u *len)
   static blt_int8u xcpCtoRxLength;
   static blt_bool  xcpCtoRxInProgress = BLT_FALSE;
 
+#if (CFG_TUSB_POLLING_ENABLED == 1)
   /* poll for USB interrupt flags to process USB releated event and run the USB device
    * stack task.
     */
   tud_int_handler(BOARD_TUD_RHPORT);
-  tud_task();
+#endif
+  tud_task_ext(0, false);
 
   /* start of cto packet received? */
   if (xcpCtoRxInProgress == BLT_FALSE)

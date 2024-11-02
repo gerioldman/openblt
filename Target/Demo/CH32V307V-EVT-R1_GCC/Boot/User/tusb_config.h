@@ -66,6 +66,7 @@
 
 // Use USB FS
 #define CFG_TUD_WCH_USBIP_USBFS 1
+#define CFG_TUD_WCH_USBIP_USBHS 0
 
 // Default is max speed that hardware controller could support with on-chip PHY
 #define CFG_TUD_MAX_SPEED     BOARD_TUD_MAX_SPEED

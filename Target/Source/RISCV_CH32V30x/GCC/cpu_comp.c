@@ -46,7 +46,7 @@
 ****************************************************************************************/
 void CpuIrqDisable(void)
 {
-  __asm volatile ("csrc 0x800, %0" : : "r" (0x88) );
+  //__asm volatile ("csrc 0x800, %0" : : "r" (0x88) );
 } /*** end of CpuIrqDisable ***/
 
 
@@ -57,7 +57,7 @@ void CpuIrqDisable(void)
 ****************************************************************************************/
 void CpuIrqEnable(void)
 {
-  __asm volatile ("csrs 0x800, %0" : : "r" (0x88) );
+  //__asm volatile ("csrs 0x800, %0" : : "r" (0x88) );
 } /*** end of CpuIrqEnable ***/
 
 

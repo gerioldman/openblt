@@ -33,9 +33,8 @@
 #if (BOOT_COM_MBRTU_ENABLE > 0)
 #include "stm32f4xx.h"                           /* STM32 CPU and HAL header           */
 #include "stm32f4xx_ll_usart.h"                  /* STM32 LL USART header              */
-#include "main.h"
-//#include "cmsis_os.h"
-//#include "stream_buffer.h"
+#include "freertos_objects.h"
+#include "stream_buffer.h"
 
 
 /****************************************************************************************
@@ -279,7 +278,7 @@ blt_bool MbRtuReceivePacket(blt_int8u *data, blt_int8u *len)
   blt_bool result = BLT_FALSE;
   blt_int16u checksumCalculated;
   blt_int16u checksumReceived;
-  blt_int8u bytesReceived = xStreamBufferReceive(xStreamBufferHandle, &rxPacket[rxLength], 1, 2);
+  blt_int8u bytesReceived = xStreamBufferReceive(uart_stream_handle, &rxPacket[rxLength], 1, 2);
 
   if (bytesReceived){
     // Add to packet data
